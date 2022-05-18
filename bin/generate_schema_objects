@@ -73,7 +73,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
         $io->block('Generating schema objects from schema types');
 
-        $scanner->generateRootQueryObject();
+        $scanner->generateRootObjects();
 
         $io->block('Schema objects generation complete');
     })
