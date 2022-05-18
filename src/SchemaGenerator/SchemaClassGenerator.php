@@ -10,9 +10,11 @@ use GraphQL\SchemaGenerator\CodeGenerator\ArgumentsObjectClassBuilder;
 use GraphQL\SchemaGenerator\CodeGenerator\EnumObjectBuilder;
 use GraphQL\SchemaGenerator\CodeGenerator\InputObjectClassBuilder;
 use GraphQL\SchemaGenerator\CodeGenerator\InterfaceObjectClassBuilder;
+use GraphQL\SchemaGenerator\CodeGenerator\MutationObjectClassBuilder;
 use GraphQL\SchemaGenerator\CodeGenerator\ObjectBuilderInterface;
 use GraphQL\SchemaGenerator\CodeGenerator\QueryObjectClassBuilder;
 use GraphQL\SchemaGenerator\CodeGenerator\UnionObjectBuilder;
+use GraphQL\SchemaObject\MutationObject;
 use GraphQL\SchemaObject\QueryObject;
 use GraphQL\Util\StringLiteralFormatter;
 use RuntimeException;
@@ -60,12 +62,18 @@ class SchemaClassGenerator
         $this->setWriteDir();
     }
 
-    public function generateRootQueryObject(): bool
+    public function generateRootObjects(): bool
     {
-        $objectArray = $this->schemaInspector->getQueryTypeSchema();
+        $objectArray = $this->schemaInspector->getSchema();
+        return $this->generateRootQueryObject($objectArray['queryType'])
+            && $this->generateRootMutationObject($objectArray['mutationType']);
+    }
+
+    public function generateRootQueryObject(array $queryObjectArray): bool
+    {
         $rootObjectName = QueryObject::ROOT_QUERY_OBJECT_NAME;
-        $queryTypeName = $objectArray['name'];
-        // $rootObjectDescr = $objectArray['description'];
+        $queryTypeName = $queryObjectArray['name'];
+        // $rootObjectDescr = $queryObjectArray['description'];
 
         if (array_key_exists($queryTypeName, $this->generatedObjects)) {
             return true;
@@ -74,8 +82,27 @@ class SchemaClassGenerator
         $this->generatedObjects[$queryTypeName] = true;
 
         $queryObjectBuilder = new QueryObjectClassBuilder($this->writeDir, $rootObjectName, $this->generationNamespace);
-        $this->appendQueryObjectFields($queryObjectBuilder, $rootObjectName, $objectArray['fields']);
+        $this->appendQueryObjectFields($queryObjectBuilder, $rootObjectName, $queryObjectArray['fields']);
         $queryObjectBuilder->build();
+
+        return true;
+    }
+
+    public function generateRootMutationObject(array $mutationObjectArray): bool
+    {
+        $rootObjectName = MutationObject::ROOT_MUTATION_OBJECT_NAME;
+        $mutationTypeName = $mutationObjectArray['name'];
+        // $rootObjectDescr = $mutationObjectArray['description'];
+
+        if (array_key_exists($mutationTypeName, $this->generatedObjects)) {
+            return true;
+        }
+
+        $this->generatedObjects[$mutationTypeName] = true;
+
+        $mutationObjectBuilder = new MutationObjectClassBuilder($this->writeDir, $rootObjectName, $this->generationNamespace);
+        $this->appendQueryObjectFields($mutationObjectBuilder, $rootObjectName, $mutationObjectArray['fields']);
+        $mutationObjectBuilder->build();
 
         return true;
     }
@@ -83,7 +110,7 @@ class SchemaClassGenerator
     /**
      * This method receives the array of object fields as an input and adds the fields to the query object building.
      */
-    private function appendQueryObjectFields(QueryObjectClassBuilder $queryObjectBuilder, string $currentTypeName, array $fieldsArray): void
+    private function appendQueryObjectFields(QueryObjectClassBuilder|MutationObjectClassBuilder $queryObjectBuilder, string $currentTypeName, array $fieldsArray): void
     {
         foreach ($fieldsArray as $fieldArray) {
             $name = $fieldArray['name'];

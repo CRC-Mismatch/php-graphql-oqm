@@ -789,7 +789,9 @@ class SchemaClassGeneratorTest extends CodeFileTestCase
     }
 
     /**
+     * @covers \GraphQL\SchemaGenerator\SchemaClassGenerator::generateRootObjects
      * @covers \GraphQL\SchemaGenerator\SchemaClassGenerator::generateRootQueryObject
+     * @covers \GraphQL\SchemaGenerator\SchemaClassGenerator::generateRootMutationObject
      */
     public function testGenerateRootObject()
     {
@@ -802,14 +804,26 @@ class SchemaClassGeneratorTest extends CodeFileTestCase
                         'description' => null,
                         'fields' => [],
                     ],
+                    'mutationType' => [
+                        'name' => 'Mutation',
+                        'kind' => FieldTypeKindEnum::OBJECT,
+                        'description' => null,
+                        'fields' => [],
+                    ],
                 ],
             ],
         ])));
-        $this->classGenerator->generateRootQueryObject();
+        $this->classGenerator->generateRootObjects();
 
         $objectName = 'RootQueryObject';
         $this->assertFileEquals(
             static::getExpectedFilesDir()."/query_objects/$objectName.php",
+            static::getGeneratedFilesDir()."/$objectName.php"
+        );
+
+        $objectName = 'RootMutationObject';
+        $this->assertFileEquals(
+            static::getExpectedFilesDir()."/mutation_objects/$objectName.php",
             static::getGeneratedFilesDir()."/$objectName.php"
         );
     }
@@ -907,9 +921,14 @@ class TransparentSchemaClassGenerator extends SchemaClassGenerator
         parent::__construct($client, $writeDir, 'GraphQL\\Tests\\SchemaObject');
     }
 
-    public function generateRootQueryObject(): bool
+    public function generateRootQueryObject(array $queryObjectArray): bool
     {
-        return parent::generateRootQueryObject();
+        return parent::generateRootQueryObject($queryObjectArray);
+    }
+
+    public function generateRootMutationObject(array $mutationObjectArray): bool
+    {
+        return parent::generateRootMutationObject($mutationObjectArray);
     }
 
     public function generateQueryObject(string $objectName): bool

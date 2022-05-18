@@ -50,7 +50,7 @@ QUERY;
         $this->client = $client;
     }
 
-    public function getQueryTypeSchema(): array
+    public function getSchema(): array
     {
         $schemaQuery = '
 query IntrospectionQuery {
@@ -153,7 +153,7 @@ fragment TypeRef on __Type {
 }';
         $response = $this->client->runRawQuery($schemaQuery, true);
 
-        return $response->getData()['__schema']['queryType'];
+        return $response->getData()['__schema'];
     }
 
     public function getObjectSchema(string $objectName): array
