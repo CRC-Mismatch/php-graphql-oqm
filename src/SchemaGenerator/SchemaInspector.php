@@ -61,22 +61,9 @@ query IntrospectionQuery {
     mutationType {
       ...FullType
     }
-    subscriptionType {
-      ...FullType
-    }
-    types {
-      ...FullType
-    }
-    directives {
-      name
-      description
-      locations
-      args {
-        ...InputValue
-      }
-    }
   }
 }
+
 fragment FullType on __Type {
   kind
   name

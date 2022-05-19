@@ -59,7 +59,7 @@ class MutationObjectClassBuilder extends ObjectClassBuilder
 
     protected function addObjectSelector(string $fieldName, string $upperCamelName, string $fieldTypeName, FieldTypeKindEnum $fieldTypeKind, string $argsObjectName, bool $isDeprecated, ?string $deprecationReason)
     {
-        $objectClass = $fieldTypeName.($fieldTypeKind === FieldTypeKindEnum::UNION_OBJECT ? 'UnionObject' : 'QueryObject');
+        $objectClass = $fieldTypeName.($fieldTypeKind === FieldTypeKindEnum::UNION_OBJECT ? 'UnionObject' : 'MutationObject');
 
         $method = $this->classFile->addMethod("select$upperCamelName", $isDeprecated, $deprecationReason);
         $method->setParameters([
